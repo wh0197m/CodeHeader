@@ -2,7 +2,7 @@
     "name": "codeheader",
     "displayName": "CodeHeader",
     "description": "An Useful VSC Extension for inserting header comment automatically and easily",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "publisher": "wh01am",
     "engines": {
         "vscode": "^1.5.0"
