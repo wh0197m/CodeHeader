@@ -26,17 +26,23 @@ export function activate(context: vscode.ExtensionContext) {
           let f = file;
           let editor = vscode.window.activeTextEditor;
           let document = editor.document;
+          let lineCount = document.lineCount;
           let updateTime = null;
           let updateAuthor = null;
           let timeLine = null;
           let authorLine = null;
           let prefix = null;
+          let timeGap = 0;
           // CodeHeader default set comments within the first 10 lines
-          for (let i = 0; i < 10; ++i) {
+          for (let i = 0; i < lineCount; ++i) {
             let line = document.lineAt(i);
+            console.log(line);
             let content = line.text.trim();
             if (content.indexOf('@Last\ Modified\ Time') > -1) {
+              let currentTime = new Date(content.substr(22)).getTime();
               updateTime = moment().format('lll');
+              timeGap = (new Date(updateTime).getTime() - currentTime) / 1000;
+              console.log(timeGap);
               timeLine = line.range;
               prefix = content.startsWith('#') ? '#' : ' *';
             }
@@ -45,12 +51,13 @@ export function activate(context: vscode.ExtensionContext) {
               authorLine = line.range;
             }
           }
-          if ((updateAuthor !== null) && (updateTime !== null)) {
+          if ((updateAuthor !== null) && (updateTime !== null) && (timeGap > 59)) {
             setTimeout(function() {
               editor.edit(function(edit) {
                 edit.replace(timeLine, `${prefix} @Last Modified Time: ${updateTime}`);
                 edit.replace(authorLine, `${prefix} @Last Modified By: ${updateAuthor}`);
-              })
+              });
+              document.save();
             }, 200)
           }
         } catch (err) {
