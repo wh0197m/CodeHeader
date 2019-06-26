@@ -36,15 +36,19 @@ export function activate(context: vscode.ExtensionContext) {
           // CodeHeader default set comments within the first 10 lines
           for (let i = 0; i < lineCount; ++i) {
             let line = document.lineAt(i);
-            console.log(line);
             let content = line.text.trim();
             if (content.indexOf('@Last\ Modified\ Time') > -1) {
               let currentTime = new Date(content.substr(22)).getTime();
               updateTime = moment().format('lll');
               timeGap = (new Date(updateTime).getTime() - currentTime) / 1000;
-              console.log(timeGap);
               timeLine = line.range;
-              prefix = content.startsWith('#') ? '#' : ' *';
+              if (content.startsWith('#')) {
+                prefix = '#';
+              } else if (content.startsWith('//')) {
+                prefix = '//';
+              } else {
+                prefix = '*';
+              }
             }
             if (content.indexOf('@Last\ Modified\ By') > -1) {
               updateAuthor = String(config.get('author'));
@@ -105,13 +109,16 @@ class CodeHeaderGen {
 function diffComment(type, config) {
   var template: string;
   var currentTime = moment().format('lll');
-  if (type === 'js' || type === 'c' || type === 'cpp' || type === 'ts' || type === 'go') {
+  if (type === 'js' || type === 'c' || type === 'cpp' || type === 'ts') {
     template = `/*\r\n * @CreateTime: ${currentTime} \r\n * @Author: ${config.author} \r\n * @Contact: ${config.contact} \r\n * @Last Modified By: ${config.author} \r\n * @Last Modified Time: ${currentTime} \r\n * @Description: Modify Here, Please  \r\n */\r\n`
   } else if (type === 'py' || type === 'rb') {
     template = `# @CreateTime: ${currentTime} \r\n# @Author: ${config.author} \r\n# @Contact: ${config.contact} \r\n# @Last Modified By: ${config.author} \r\n# @Last Modified Time: ${currentTime} \r\n# @Description: Modify Here, Please \r\n`
   } else if (type === 'sh') {
     template = `#！/bin/bash - \r\n# @CreateTime: ${currentTime} \r\n# @Author: ${config.author} \r\n# @Contact: ${config.contact} \r\n# @Last Modified By: ${config.author} \r\n# @Last Modified Time: ${currentTime} \r\n# @Description: Modify Here, Please \r\n`
-  } else {
+  } else if (type === 'go') {
+    template = `// @CreateTime: ${currentTime} \r\n// @Author: ${config.author} \r\n// @Contact: ${config.contact} \r\n// @Last Modified By: ${config.author} \r\n// @Last Modified Time: ${currentTime} \r\n// @Description: Modify Here, Please \r\n`
+  }
+    else {
     template = `/*\r\n * @CreateTime: ${currentTime} \r\n * @Author: ${config.author} \r\n * @Contact: ${config.contact} \r\n * @Last Modified By: ${config.author} \r\n * @Last Modified Time: ${currentTime} \r\n * @Description: Modify Here, Please  \r\n */\r\n`
   }
   return template;
